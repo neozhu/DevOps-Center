@@ -26,7 +26,7 @@ private class WorkoutHandlerTest {
     static void makeData(){
         Workout__c w1=new Workout__c(Workout_Type__c='Strength Training',Set__c=10,Start_Date__c=Date.Today());
         insert w1;
-        System.debug(LoggingLevel.DEBUG,'makeData done.');
+        System.debug(LoggingLevel.DEBUG,'makeData done.'); // NOPMD
     }
     @isTest
     static void testinsert() {
