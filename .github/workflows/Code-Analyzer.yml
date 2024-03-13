@@ -1,0 +1,44 @@
+name: Salesforce Code Analyzer
+on:
+    # The workflow will run whenever an event happens on a pull request
+    pull_request:
+      # The events are that a PR is opened, or when a commit is pushed
+      # to a branch that has an existing pull request
+      types: [opened, synchronize, reopened, push]
+      # The branches filter allows to specify that this workflow should only
+      # run if the branch name is "UAT". This way we prevent this workflow
+      # from running when PRs are opened on other branches
+      branches:
+        - UAT
+      # We only care about changes to the force-app directory, which is the
+      # root directory of the sfdx project. This prevents the job from running
+      # when changing non-salesforce files (like this yml file).
+      paths:
+        - "force-app/**"
+jobs:
+  salesforce-code-analyzer-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli@latest
+
+      - name: Install Salesforce Code Analyzer Plugin
+        run: sf plugins install @salesforce/sfdx-scanner@latest
+
+      - name: Run Salesforce Code Analyzer
+        id: run-code-analyzer
+        uses: forcedotcom/run-code-analyzer@v1
+        with:
+          run-command: run
+          run-arguments: --normalize-severity --target . --outfile results.html
+          results-artifact-name: salesforce-code-analyzer-results
+
+      - name: Check the outputs to determine whether to fail
+        if: |
+          steps.run-code-analyzer.outputs.exit-code > 0 ||
+          steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+          steps.run-code-analyzer.outputs.num-violations > 10
+        run: exit 1
