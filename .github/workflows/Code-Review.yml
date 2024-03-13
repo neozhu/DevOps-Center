@@ -23,8 +23,9 @@ jobs:
             - name: Code Review
               uses: pragmatic-bear/sfdx-code-review-action@v0.5.2
               with:
-                  source_path: 'invest-app/**/*'
+                  source_path: 'force-app/**/*'
                   reject_threshold: 1
                   approve_threshold: 3
                   category: '!Documentation'
+                  engine: 'pmd, eslint'
                   github_token: ${{ secrets.GIT_TOKEN }}
