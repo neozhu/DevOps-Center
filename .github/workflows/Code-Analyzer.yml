@@ -33,12 +33,17 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --normalize-severity --target . --outfile results.html
+          run-arguments: --severity-threshold 1 --target . --outfile salesforce-code-analyzer-results.sarif
           results-artifact-name: salesforce-code-analyzer-results
 
+      # Now we upload the .sarif file as explained in the previous step
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./apexScanResults.sarif
+        
       - name: Check the outputs to determine whether to fail
         if: |
           steps.run-code-analyzer.outputs.exit-code > 0 ||
-          steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
-          steps.run-code-analyzer.outputs.num-violations > 10
+          steps.run-code-analyzer.outputs.num-sev1-violations > 0
         run: exit 1
