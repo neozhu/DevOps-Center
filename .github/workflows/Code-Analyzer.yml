@@ -33,7 +33,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --severity-threshold --target . --outfile salesforce-code-analyzer-results.sarif
+          run-arguments: --normalize-severity --severity-threshold 2 --target . --outfile salesforce-code-analyzer-results.sarif
           results-artifact-name: salesforce-code-analyzer-results
 
       # Now we upload the .sarif file as explained in the previous step
