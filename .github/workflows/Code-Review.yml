@@ -25,6 +25,7 @@ jobs:
               with:
                   source_path: 'force-app/**/*'
                   reject_threshold: 1
+                  severity_threshold: 2
                   # approve_threshold: 3
                   category: '!Documentation'
                   engine: 'pmd, eslint'
