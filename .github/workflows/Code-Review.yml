@@ -27,4 +27,4 @@ jobs:
                   reject_threshold: 1
                   approve_threshold: 3
                   category: '!Documentation'
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  github_token: ${{ secrets.GIT_TOKEN }}
