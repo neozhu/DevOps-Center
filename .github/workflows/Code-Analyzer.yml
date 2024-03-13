@@ -36,12 +36,16 @@ jobs:
           run-arguments: --normalize-severity --severity-threshold 2 --target . --outfile salesforce-code-analyzer-results.sarif
           results-artifact-name: salesforce-code-analyzer-results
 
-      # Now we upload the .sarif file as explained in the previous step
-      - name: Upload SARIF file
+      
+      # Now we upload the .sarif file if there are exit-code > 0 or num-sev1-violations > 0
+      - name: Upload Code analyzer Results
+        if: |
+          steps.run-code-analyzer.outputs.exit-code > 0 ||
+          steps.run-code-analyzer.outputs.num-sev1-violations > 0
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ./apexScanResults.sarif
-        
+            sarif_file: ./salesforce-code-analyzer-results.sarif  
+    
       - name: Check the outputs to determine whether to fail
         if: |
           steps.run-code-analyzer.outputs.exit-code > 0 ||
