@@ -33,6 +33,8 @@ private class WorkoutHandlerTest {
         // TO DO: implement unit test
         Workout__c w2=new Workout__c(Workout_Type__c='CrossFit',Set__c=20,Start_Date__c=Date.Today());
         insert w2;
+        List<Workout__c> total=[Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c];
+        System.assertEquals(2, total.size(), 'insert pass!');
     }
     @isTest
     static void testupdate() {
@@ -40,6 +42,7 @@ private class WorkoutHandlerTest {
         Workout__c w1 = [Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c LIMIT 1];
         w1.Set__c=15;
         update w1;
+        System.assertEquals(15, w1.Set__c, 'update pass!');
     }
 
     @isTest
@@ -47,5 +50,7 @@ private class WorkoutHandlerTest {
         // TO DO: implement unit test
         Workout__c w1 = [Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c LIMIT 1];
         delete w1;
+        List<Workout__c> total=[Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c];
+        System.assertEquals(0, total.size(), 'delete pass!');
     }
 }
