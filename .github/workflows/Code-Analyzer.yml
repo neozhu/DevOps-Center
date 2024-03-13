@@ -1,4 +1,4 @@
-name: Salesforce Code Analyzer Workflow
+name: Salesforce Code Analyzer
 on:
     # The workflow will run whenever an event happens on a pull request
     pull_request:
