@@ -33,7 +33,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --engine pmd-appexchange --normalize-severity --target . --outfile salesforce-code-analyzer-results.html --category '!Security,!Best Practices'
+          run-arguments: --engine "eslint-lwc,pmd" --normalize-severity --target . --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
           results-artifact-name: salesforce-code-analyzer-results
 
       
