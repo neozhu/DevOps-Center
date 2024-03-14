@@ -33,7 +33,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --normalize-severity --target . --outfile salesforce-code-analyzer-results.html
+          run-arguments: --engine pmd-appexchange --normalize-severity --target . --outfile salesforce-code-analyzer-results.html
           results-artifact-name: salesforce-code-analyzer-results
 
       
