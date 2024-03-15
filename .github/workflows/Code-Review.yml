@@ -23,10 +23,11 @@ jobs:
             - name: Code Review
               uses: pragmatic-bear/sfdx-code-review-action@v0.5.2
               with:
-                  source_path: 'force-app/**/*'
+                  source_path: 'force-app/main/**/*'
                   reject_threshold: 1
-                  severity_threshold: 2
+                  severity_threshold: 3
                   # approve_threshold: 3
-                  category: '!Documentation'
+                  # category: '!Documentation,!'
+                  pmdconfig: '.github/workflows/pmd-ruleset.xml'
                   engine: 'pmd, eslint'
                   github_token: ${{ secrets.GIT_TOKEN }}
