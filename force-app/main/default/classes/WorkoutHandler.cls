@@ -4,8 +4,6 @@
  *
  */
 public with sharing class WorkoutHandler implements ITrigger {
-  public WorkoutHandler() {
-  }
   private Map<string, Workout__c> changed = new Map<string, Workout__c>();
   /**
    * bulkBefore
