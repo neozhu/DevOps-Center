@@ -29,5 +29,5 @@ jobs:
                   # approve_threshold: 3
                   # category: '!Documentation,!'
                   pmdconfig: '.github/workflows/pmd-ruleset.xml'
-                  engine: 'pmd, eslint'
+                  engine: 'pmd, eslint-lwc'
                   github_token: ${{ secrets.GIT_TOKEN }}
