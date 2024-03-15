@@ -163,6 +163,11 @@ jobs:
           sarif_file: changed-sources/apexScanResults.sarif
           category: code-scan
 
+      - name: 'Upload apex Scan Results file'
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-scan-result
+          path: changed-sources/apexScanResults.sarif
       # We do a check-only deploy and we only run the tests specified in the PR
       # If the env variable does not equal 'all', we know that there is a list of
       # tests that can be run
@@ -171,8 +176,13 @@ jobs:
         if: ${{ env.APEX_TESTS != 'all' }}
         run: |
             echo ${{env.APEX_TESTS}}
-            sf force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json
-
+            sf force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json  > deployTestResult.json || true
+      
+      - name: 'Upload deploy result as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-result
+          path: deployTestResult.json
       # If the env variable equals all, we run all tests
       - name: 'Check-only deploy delta changes - run all tests'
         if: ${{ env.APEX_TESTS == 'all' }}
