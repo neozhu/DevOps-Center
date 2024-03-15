@@ -33,7 +33,7 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --engine "eslint-lwc,pmd" --normalize-severity --target "force-app/main/default/classes/*.cls" --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
+          run-arguments: --engine "eslint-lwc,pmd" --normalize-severity --target "force-app/main/**/*" --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
           results-artifact-name: salesforce-code-analyzer-results
 
       
@@ -41,5 +41,5 @@ jobs:
         if: |
           steps.run-code-analyzer.outputs.exit-code > 0 ||
           steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
-          steps.run-code-analyzer.outputs.num-sev2-violations > 10
+          steps.run-code-analyzer.outputs.num-sev2-violations > 5
         run: exit 1
