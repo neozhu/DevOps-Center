@@ -33,7 +33,8 @@ jobs:
         uses: forcedotcom/run-code-analyzer@v1
         with:
           run-command: run
-          run-arguments: --engine "eslint-lwc,pmd" --normalize-severity --target "force-app/main/**/*.cls,force-app/main/**/*.js,!force-app/main/**/__tests__/**" --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
+          # run-arguments: --engine "eslint-lwc,pmd" --normalize-severity --target "force-app/main/**/*.cls,force-app/main/**/*.js,!force-app/main/**/__tests__/**" --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
+          run-arguments: --engine "pmd" --normalize-severity --target "force-app/main/**/*.cls,force-app/main/**/*.js,!force-app/main/**/__tests__/**" --outfile salesforce-code-analyzer-results.html --pmdconfig ".github/workflows/pmd-ruleset.xml"
           results-artifact-name: salesforce-code-analyzer-results
 
       
