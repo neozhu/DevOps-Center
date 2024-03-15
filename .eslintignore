@@ -13,5 +13,6 @@
 **/aura/**/*.tokens
 **/aura/**/*.xml
 **/aura/**/*.app
-**/__test__/**
+**/aura/**/__test__/**
+**/lwc/**/__test__/**
 .sfdx
