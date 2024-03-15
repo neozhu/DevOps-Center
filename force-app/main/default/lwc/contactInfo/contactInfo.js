@@ -34,7 +34,7 @@ export default class ContactInfo extends LightningElement {
     get email() {
         return getFieldValue(this.contact.data, EMAIL_FIELD);
     }
-
+    // there is error
     get picture() {
         return getFieldValue(this.contact.data, PICTURE_FIELD);
     }
