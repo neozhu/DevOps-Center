@@ -13,4 +13,5 @@
 **/aura/**/*.tokens
 **/aura/**/*.xml
 **/aura/**/*.app
+**/__test__/**
 .sfdx
