@@ -29,10 +29,6 @@ private class WorkoutHandlerTest {
         Workout__c w1=new Workout__c(Workout_Type__c='Strength Training',Set__c=10,Start_Date__c=Date.Today());
         insert w1;
         System.debug(LoggingLevel.DEBUG,'makeData done.'); 
-        if(true) 
-          String a=1;
-        else 
-          String b=2;
         
     }
     @isTest
