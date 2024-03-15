@@ -3,6 +3,16 @@
   "extends": ["plugin:@salesforce/eslint-plugin-aura/recommended"],
   "rules": {
     "vars-on-top": "off",
-    "no-unused-expressions": "off"
+    "no-unused-expressions": "off",
+    "sort-imports": "off", 
+    "sort-keys": "off",
+    "capitalized-comments": "off",
+    "import-order": "off", 
+    "member-ordering": "off",
+    "indent": ["warn", 4],
+    "linebreak-style": ["warn", "unix"], 
+    "quotes": ["warn", "single"],
+    "semi": ["warn", "always"]
+    
   }
 }
