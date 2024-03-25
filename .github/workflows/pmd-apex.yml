@@ -1,0 +1,49 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Aapex Code analyzer
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '34 9 * * 5'
+
+permissions:
+  contents: read
+
+jobs:
+  pmd-code-scan:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+       
+      - name: Run PMD Analysis on Files Changed
+        id: pmd-partial-analysis
+        if: github.event.pull_request != null
+        uses: synergy-au/pmd-analyser-action@v2.5
+        with:
+          pmd-version: 'latest'
+          file-path: './force-app/main/default'
+          rules-path: '.github/workflows/pmd-ruleset.xml'
+          error-rules: 'AvoidDirectAccessTriggerMap,AvoidDmlStatementsInLoops,AvoidHardcodingId'
+          note-rules: 'ApexDoc'
+      - name: Upload results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: pmd-output.sarif
+      - name: No PMD Errors?
+        run: |
+          if ${{ steps.pmd-full-analysis.outputs.error-found }} ${{ steps.pmd-partial-analysis.outputs.error-found }}
+          then
+            exit 2
+          fi
