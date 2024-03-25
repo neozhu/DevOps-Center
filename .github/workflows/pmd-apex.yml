@@ -7,9 +7,9 @@ name: Aapex Code analyzer
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","UAT" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ,"UAT"]
   schedule:
     - cron: '34 9 * * 5'
 
