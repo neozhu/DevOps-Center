@@ -1,7 +1,7 @@
 /**
  * @description This class uses the TriggerHandler class to handle the logic of bulk updates and
  * passing trigger events to handler methods.
- *
+ * on 2024
  */
 public with sharing class WorkoutHandler implements ITrigger {
   private Map<string, Workout__c> changed = new Map<string, Workout__c>();
