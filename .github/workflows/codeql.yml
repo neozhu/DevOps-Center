@@ -1,0 +1,92 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "main","UAT" ]
+  pull_request:
+    branches: [ "main","UAT" ]
+  schedule:
+    - cron: '31 13 * * 6'
+
+jobs:
+  analyze:
+    name: Analyze
+    # Runner size impacts CodeQL analysis time. To learn more, please see:
+    #   - https://gh.io/recommended-hardware-resources-for-running-codeql
+    #   - https://gh.io/supported-runners-and-hardware-resources
+    #   - https://gh.io/using-larger-runners
+    # Consider using larger runners for possible analysis time improvements.
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    steps:
+      # Now we install nodejs in the VM, and specify version 14
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # The idea is that the VM can access your remote repository
+      # because your repository is an sfdx project.
+      # This is a default action that allows us to enter the root 
+      # directory of the repository
+
+      # Make sure to specify fetch-depth:0. This allows us to
+      # access previous commits that have been pushed to the repository.
+
+      # We'll need this later when we try to figure out which metadata has 
+      # changed between commits, so that we can only deploy that metadata
+      # to the destination org
+
+      - name: 'Checkout source code'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      # Now Install Salesforce CLI
+      - name: 'Install Salesforce CLI'
+        run: npm install -g @salesforce/cli@latest
+
+      # Then we install the SFDX-Git-Delta plugin - https://github.com/scolladon/sfdx-git-delta
+      # This is an awesome plugin that allows us to extract a package.xml with the metadata
+      # that has changed between commits. I highly recommend going over the github readme 
+      # for more information on how this works.
+
+      - name: 'Installing sfdx git delta'
+        run: | 
+            echo y | sf plugins install sfdx-git-delta
+            sf plugins 
+
+      # Install java as it is required for the next step
+      - name: 'Installing java'
+        run: |
+          sudo apt-get update
+          sudo apt install default-jdk
+
+      # Install SFDX scanner
+      - name: 'Installing SFDX scanner'
+        run: sf plugins install @salesforce/sfdx-scanner
+
+     
+      - name: 'Scan code'
+        run: |
+            cd force-app/main/default
+            sf scanner:run  --engine 'pmd' --format sarif --target './**/*.cls,./**/*.js,!./**/__tests__/**' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
+            cd ..
+
+      # Now we upload the .sarif file as explained in the previous step
+      - name: Upload apex Scan Results file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: force-app/main/default/apexScanResults.sarif
+          category: code-scan
+
