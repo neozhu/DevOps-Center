@@ -34,8 +34,8 @@ jobs:
         id: pmd
         uses: pmd/pmd-github-action@v2
         with:
-          rulesets: './.github/workflows/pmd-ruleset.xml'
-          sourcePath: './force-app/main/default/**/*.cls'
+          rulesets: '/.github/workflows/pmd-ruleset.xml'
+          sourcePath: '/force-app/main/default/**/*.cls'
           analyzeModifiedFilesOnly: false
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
