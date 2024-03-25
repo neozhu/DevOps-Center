@@ -13,9 +13,9 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","UAT" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main","UAT" ]
   schedule:
     - cron: '31 13 * * 6'
 
@@ -27,58 +27,66 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners
     # Consider using larger runners for possible analysis time improvements.
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
-    permissions:
-      # required for all workflows
-      security-events: write
-
-      # only required for workflows in private repositories
-      actions: read
-      contents: read
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript-typescript' ]
-        # CodeQL supports [ 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift' ]
-        # Use only 'java-kotlin' to analyze code written in Java, Kotlin or both
-        # Use only 'javascript-typescript' to analyze code written in JavaScript, TypeScript or both
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # Now we install nodejs in the VM, and specify version 14
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
+      # The idea is that the VM can access your remote repository
+      # because your repository is an sfdx project.
+      # This is a default action that allows us to enter the root 
+      # directory of the repository
 
-        # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
-        # queries: security-extended,security-and-quality
+      # Make sure to specify fetch-depth:0. This allows us to
+      # access previous commits that have been pushed to the repository.
 
+      # We'll need this later when we try to figure out which metadata has 
+      # changed between commits, so that we can only deploy that metadata
+      # to the destination org
 
-    # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      - name: 'Checkout source code'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      # Now Install Salesforce CLI
+      - name: 'Install Salesforce CLI'
+        run: npm install -g @salesforce/cli@latest
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+      # Then we install the SFDX-Git-Delta plugin - https://github.com/scolladon/sfdx-git-delta
+      # This is an awesome plugin that allows us to extract a package.xml with the metadata
+      # that has changed between commits. I highly recommend going over the github readme 
+      # for more information on how this works.
 
-    #   If the Autobuild fails above, remove it and uncomment the following three lines.
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
+      - name: 'Installing sfdx git delta'
+        run: | 
+            echo y | sf plugins install sfdx-git-delta
+            sf plugins 
 
-    # - run: |
-    #     echo "Run, Build Application using script"
-    #     ./location_of_script_within_repo/buildscript.sh
+      # Install java as it is required for the next step
+      - name: 'Installing java'
+        run: |
+          sudo apt-get update
+          sudo apt install default-jdk
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      # Install SFDX scanner
+      - name: 'Installing SFDX scanner'
+        run: sf plugins install @salesforce/sfdx-scanner
+
+     
+      - name: 'Scan code'
+        run: |
+            cd ./force-app/main/default
+            sf scanner:run  --engine 'pmd' --format sarif --target './**/*.cls,./**/*.js,!./**/__tests__/**' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
+            cd ..
+
+      # Now we upload the .sarif file as explained in the previous step
+      - name: Upload apex Scan Results file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: changed-sources/apexScanResults.sarif
+          category: code-scan
+
