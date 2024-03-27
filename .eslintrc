@@ -1,9 +1,7 @@
 {
-  "plugins": ["@salesforce/eslint-plugin-aura"],
-  "extends": ["plugin:@salesforce/eslint-plugin-aura/recommended"],
-  "rules": {
-    "vars-on-top": "off",
-    "no-unused-expressions": "off",
+"extends": ["@salesforce/eslint-config-lwc/recommended"],
+"rules": {
+    
     "sort-imports": "off", 
     "sort-keys": "off",
     "capitalized-comments": "off",
@@ -13,6 +11,5 @@
     "linebreak-style": ["warn", "unix"], 
     "quotes": ["warn", "single"],
     "semi": ["warn", "always"]
-    
   }
 }

@@ -92,12 +92,7 @@ jobs:
             
       # Now Install Salesforce CLI
       - name: 'Install Salesforce CLI'
-        run: |
-            wget https://developer.salesforce.com/media/salesforce-cli/sfdx/channels/stable/sfdx-linux-x64.tar.xz
-            mkdir ~/sfdx
-            tar xJf sfdx-linux-x64.tar.xz -C ~/sfdx --strip-components 1
-            echo "$HOME/sfdx/bin" >> $GITHUB_PATH
-            ~/sfdx/bin/sfdx version
+        run: npm install -g @salesforce/cli@latest
 
       # Then we install the SFDX-Git-Delta plugin - https://github.com/scolladon/sfdx-git-delta
       # This is an awesome plugin that allows us to extract a package.xml with the metadata
@@ -106,8 +101,8 @@ jobs:
 
       - name: 'Installing sfdx git delta'
         run: | 
-            echo y | sfdx plugins:install sfdx-git-delta
-            sfdx plugins 
+            echo y | sf plugins install sfdx-git-delta
+            sf plugins 
 
       # Install java as it is required for the next step
       - name: 'Installing java'
@@ -117,7 +112,7 @@ jobs:
 
       # Install SFDX scanner
       - name: 'Installing SFDX scanner'
-        run: sfdx plugins:install @salesforce/sfdx-scanner
+        run: sf plugins install @salesforce/sfdx-scanner
 
       # Prior to setting up this workflow, you have to create a Github Secret
       # that contains the sfdx url of the integration/qa org.
@@ -139,7 +134,7 @@ jobs:
 
       # Authenticate to org using the URL stored in the text file
       - name: 'Authenticate to UAT Org'
-        run: sfdx auth:sfdxurl:store -f ./SFDX_UAT_URL.txt -s -a uat
+        run: sf auth:sfdxurl:store -f ./SFDX_UAT_URL.txt -s -a uat
 
       # We use SFDX Git Delta to create a directory with only the metadata that has changed.
       # this allows us to deploy only those changes, as opposed to deploying the entire branch. 
@@ -147,7 +142,7 @@ jobs:
       - name: 'Create delta packages for new, modified or deleted metadata'
         run: | 
             mkdir changed-sources
-            sfdx sgd:source:delta --to "HEAD" --from "HEAD^" --output changed-sources/ --generate-delta --source force-app/ 
+            sf sgd:source:delta --to "HEAD" --from "HEAD^" --output changed-sources/ --generate-delta --source force-app/ 
 
       # Now we can use the sfdx scanner to scan the code in the delta directory
       # The output of the scan is stored in a file called apexScanResults.sarif
@@ -158,15 +153,21 @@ jobs:
       - name: 'Scan code'
         run: |
             cd changed-sources
-            sfdx scanner:run --format sarif --target './**/*.cls' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
+            sf scanner:run  --engine 'pmd' --format sarif --target './**/*.cls,./**/*.js,!./**/__tests__/**' --category "Design,Best Practices,Performance" --outfile 'apexScanResults.sarif'  
             cd ..
 
       # Now we upload the .sarif file as explained in the previous step
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v1
+      - name: Upload apex Scan Results file
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: changed-sources/apexScanResults.sarif
+          category: code-scan
 
+      - name: 'Upload apex Scan Results file'
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-scan-result
+          path: changed-sources/apexScanResults.sarif
       # We do a check-only deploy and we only run the tests specified in the PR
       # If the env variable does not equal 'all', we know that there is a list of
       # tests that can be run
@@ -175,13 +176,18 @@ jobs:
         if: ${{ env.APEX_TESTS != 'all' }}
         run: |
             echo ${{env.APEX_TESTS}}
-            sfdx force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json
-
+            sf force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunSpecifiedTests --runtests ${{env.APEX_TESTS}} --json  > deployTestResult.json || true
+      
+      - name: 'Upload deploy result as artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-result
+          path: deployTestResult.json
       # If the env variable equals all, we run all tests
       - name: 'Check-only deploy delta changes - run all tests'
         if: ${{ env.APEX_TESTS == 'all' }}
         run: |
-            sfdx force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunLocalTests  --json
+            sf force:source:deploy -p "changed-sources/force-app" --checkonly --testlevel RunLocalTests  --json
 
       - name: 'Deploy destructive changes (if any)'
-        run: sfdx force:mdapi:deploy -d "changed-sources/destructiveChanges" --checkonly --ignorewarnings 
+        run: sf force:mdapi:deploy -d "changed-sources/destructiveChanges" --checkonly --ignorewarnings 

@@ -1,4 +1,5 @@
 /**
+ * @description 
  * This class contains unit tests for validating the behavior of Apex classes
  * and triggers.
  *
@@ -18,6 +19,7 @@
  * the org size limit for all Apex scripts.
  *
  * See the Apex Language Reference for more information about Testing and Code Coverage.
+ * 
  */
 @isTest
 private class WorkoutHandlerTest {
@@ -26,13 +28,16 @@ private class WorkoutHandlerTest {
     static void makeData(){
         Workout__c w1=new Workout__c(Workout_Type__c='Strength Training',Set__c=10,Start_Date__c=Date.Today());
         insert w1;
-
+        System.debug(LoggingLevel.DEBUG,'makeData done.'); 
+        
     }
     @isTest
     static void testinsert() {
         // TO DO: implement unit test
         Workout__c w2=new Workout__c(Workout_Type__c='CrossFit',Set__c=20,Start_Date__c=Date.Today());
         insert w2;
+        List<Workout__c> total=[Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c];
+        System.assertEquals(2, total.size());
     }
     @isTest
     static void testupdate() {
@@ -40,6 +45,7 @@ private class WorkoutHandlerTest {
         Workout__c w1 = [Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c LIMIT 1];
         w1.Set__c=15;
         update w1;
+        System.assertEquals(15, w1.Set__c, 'update pass!');
     }
 
     @isTest
@@ -47,5 +53,7 @@ private class WorkoutHandlerTest {
         // TO DO: implement unit test
         Workout__c w1 = [Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c LIMIT 1];
         delete w1;
+        List<Workout__c> total=[Select Id,Workout_Type__c,Set__c,Start_Date__c from Workout__c];
+        System.assertEquals(0, total.size(), 'delete pass!');
     }
 }
